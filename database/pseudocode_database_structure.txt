@@ -1,0 +1,87 @@
+# Pseudocode for Habit Tracker Database Schema:
+
+# Purpose: Define the structure and relationship between tables 
+
+----------------------------
+TABLES
+----------------------------
+
+Table: Users
+
+Purpose:
+- Stores information for each person using the app
+
+Fields:
+- user_id        → Primary Key (auto-increment integer)
+- firstname       → Text, must be unique
+- email          → Text
+- created_at     → DateTime, default to current date
+
+Note: Each user can create multiple logs 
+
+----------------------------
+
+Table: Habits
+
+Purpose:
+- Stores the habits each user wants to track
+
+Fields:
+- habit_id       → Primary Key (auto-increment integer)
+- user_id        → Foreign Key referencing Users.user_id
+- habit_name     → Text
+- description    → Text
+- category       → Text (e.g., health, productivity)
+- frequency      → Text (e.g., daily, weekly)
+- start_date     → Date
+- created at     → DateTime (auto-generated)
+
+Notes:
+- One user can have many habits
+- Each habit is associated with one user
+
+----------------------------
+
+Table: Habit Logs
+
+Purpose:
+- Stores daily records of whether a user completed a habit
+
+Fields:
+- log_id         → Primary Key (auto-increment integer)
+- habit_id       → Foreign Key referencing Habits.habit_id
+- log_date       → Date
+- habit status   → BIT (1 = completed, 0 = not completed)
+- note           → Text (optional)
+- logged at      → date time (auto-generated)
+
+Notes:
+- One habit can have many log entries (one per day)
+- Each log belongs to one habit
+
+RELATIONSHIPS
+----------------------------
+- Users → Habits (One-to-Many)
+- Habits → Habit_Logs (One-to-Many)
+
+Logical Flow:
+1. User signs up → saved in Users
+2. User creates a habit → saved in Habits with link to user_id
+3. User logs habit completion → saved in Habit_Logs with link to habit_id
+
+----------------------------
+EXAMPLE:
+----------------------------
+- A user named "Jess" signs up
+- Jess creates a habit "Meditate" under the category "Health"
+- On May 28th, Jess logs the habit as completed with a short note in her log
+
+System stores:
+- Jess in Users
+- "Meditate" in Habits with Jess’s user_id
+- A new row in Habit_Logs for May 28 with status = 1
+
+----------------------------
+END OF PSEUDOCODE
+----------------------------
+
