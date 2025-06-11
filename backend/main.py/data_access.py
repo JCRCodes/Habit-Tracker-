@@ -1,10 +1,11 @@
 # data_access.py - data access layer for Habit Tracker application
 
+# Step 1 - import 
 import pyodbc
 from datetime import datetime
 from typing import List, Tuple, Optional
 
-class Habit_Database:
+class HabitDatabase:
     def __init__(self, connection_string: str):
         """Initialize the database connection"""
         self.connection_string = connection_string
@@ -190,10 +191,10 @@ class Habit_Database:
 
 
         Args:
-            habit_id (int): _description_
+            habit_id (int):the unique identifier of the habit to delete
 
         Returns:
-            bool: _description_
+            bool: returns true if the habit was successful and false if there was an error or if the habit does not exist 
         """
         try:
             
