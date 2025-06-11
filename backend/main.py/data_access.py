@@ -1,6 +1,6 @@
-# data_access.py - data access layer for Habit Tracker application
+"""Data Access Layer for Habit Tracker Database"""
 
-# Step 1 - import 
+
 import pyodbc
 from datetime import datetime
 from typing import List, Tuple, Optional
