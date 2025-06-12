@@ -122,3 +122,4 @@ def test_get_habit_by_category(db):
     assert len(habits) > 0  # Ensure we got some habits back
     assert any(h[1] == "Category Test Habit" for h in habits) # assert that the habit exists in the list of habits
     print("✅ Habits retrieved by category successfully from test database.")
+    

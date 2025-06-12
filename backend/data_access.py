@@ -261,3 +261,4 @@ class HabitDatabase:
         finally:
             if 'conn' in locals():
                 conn.close()  
+
