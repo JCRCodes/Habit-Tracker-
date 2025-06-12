@@ -54,7 +54,6 @@ class HabitDatabase:
             if 'conn' in locals():
                 conn.close()
                 
-
     def get_user_habits(self, user_id: int) -> List[Tuple[int, str, str, str, str, datetime]]:
         try:
             conn = self._get_connection()
@@ -261,4 +260,4 @@ class HabitDatabase:
             return []
         finally:
             if 'conn' in locals():
-                conn.close()    
+                conn.close()  
