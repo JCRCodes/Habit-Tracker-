@@ -4,6 +4,14 @@
 import pyodbc
 from datetime import datetime
 from typing import List, Tuple, Optional
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Loads variables from .env
+
+# Load the connection string from environment variables
+connection_string = os.getenv("DB_CONNECTION_STRING")
+print("Loaded connection string:", connection_string)  # For debugging
 
 class HabitDatabase:
     def __init__(self, connection_string: str):
@@ -262,3 +270,12 @@ class HabitDatabase:
             if 'conn' in locals():
                 conn.close()  
 
+# Instantiate the database object after the class definition
+db = HabitDatabase(connection_string)
+
+
+
+if __name__ == "__main__":
+    # Try to fetch all habits for user_id=1
+    habits = db.get_user_habits(user_id=1)
+    print("Habits for user 1:", habits)

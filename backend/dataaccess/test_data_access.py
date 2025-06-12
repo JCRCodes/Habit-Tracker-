@@ -4,7 +4,7 @@
 # to run the test and see success messages, use 'pytest -s test_data_access.py'
 
 import pytest
-from data_access import HabitDatabase
+from dataaccess.data_access import HabitDatabase
 
 # Test database connection string (update if your server/database name changes)
 TEST_CONNECTION_STRING = (
