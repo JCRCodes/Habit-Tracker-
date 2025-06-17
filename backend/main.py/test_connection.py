@@ -48,12 +48,19 @@ def test_connection():
         cursor.execute("SELECT @@VERSION")
         version = cursor.fetchone()
         print("✅ Connection successful!")
-        print(f"SQL Server Version: {version[0][:50]}...")
+        if version and version[0]:
+            print(f"SQL Server Version: {version[0][:50]}...")
+        else:
+            print("SQL Server Version: (not available)")
         
 # Test our tables
         cursor.execute("SELECT COUNT(*) FROM Habits")
-        habit_count = cursor.fetchone()[0]
-        print(f"✅ Found {habit_count} habits in database")
+        result = cursor.fetchone()
+        if result is not None:
+            habit_count = result[0]
+            print(f"✅ Found {habit_count} habits in database")
+        else:
+            print("⚠️ Could not retrieve habit count (no result returned)")
         
         # Check what columns exist in the Habits table
         cursor.execute("""

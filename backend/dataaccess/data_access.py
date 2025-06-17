@@ -1,6 +1,5 @@
 """Data Access Layer for Habit Tracker Database"""
 
-
 import pyodbc
 from datetime import datetime
 from typing import List, Tuple, Optional
@@ -11,6 +10,8 @@ load_dotenv()  # Loads variables from .env
 
 # Load the connection string from environment variables
 connection_string = os.getenv("DB_CONNECTION_STRING")
+if connection_string is None:
+    raise ValueError("DB_CONNECTION_STRING environment variable is not set.")
 print("Loaded connection string:", connection_string)  # For debugging
 
 class HabitDatabase:
@@ -272,8 +273,6 @@ class HabitDatabase:
 
 # Instantiate the database object after the class definition
 db = HabitDatabase(connection_string)
-
-
 
 if __name__ == "__main__":
     # Try to fetch all habits for user_id=1
