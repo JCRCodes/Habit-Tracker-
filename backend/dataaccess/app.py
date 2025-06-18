@@ -127,7 +127,11 @@ class AddHabitFrame(ctk.CTkFrame):
         
         
         # Input fields for habit name and description
-        self.habit_entry = ctk.CTkEntry(overlay, 
+        self.habit_entry = ctk.CTkEntry(overlay,
+        fg_color="#FFFFFF",
+        border_color="#BC84AB",
+        border_width=2,
+        text_color="#BC84AB",
         placeholder_text="Habit name",
         corner_radius=10,
         font=("Helevetica",
@@ -142,21 +146,41 @@ class AddHabitFrame(ctk.CTkFrame):
         )
         
         # Habit Description Entry
-        self.desc_entry = ctk.CTkEntry(overlay, placeholder_text="Description",
+        self.desc_entry = ctk.CTkEntry(overlay,
+        fg_color="#FFFFFF",
+        border_color="#BC84AB",
+        border_width=2,
+        text_color="#BC84AB",
+        placeholder_text="Description",
         font=("Helevetica",
         16),
         width=300
         ).pack(pady=10)
 
-        # Habit Description Entry Configuration
-        self.configure(
-        fg_color="#BC84AB",
-        corner_radius=10,
-        )
+        
+        # Habit Frequency Dropdown
 
-    def save_habit(self):
-        # Logic for saving a new habit
-        pass
+        self.frequency_var = ctk.StringVar(value="Select Frequency")
+        ctk.CTkLabel(
+        overlay,
+        text="Select Frequency",
+        font=("Helevetica", 16),
+        text_color="#BC84AB")
+        
+        self.frequency_menu = ctk.CTkOptionMenu(
+        overlay,
+        variable=self.frequency_var,
+        values=["Daily", "Weekly", "Monthly"],
+        fg_color="#FFFFFF",
+        button_color="#BC84AB",
+        button_hover_color="#A0699B",
+        text_color="#BC84AB",
+        font=("Helevetica", 16),
+        width=200
+        )
+        
+        self.frequency_menu.set("Select Frequency")
+        self.frequency_menu.pack(pady=10)
 
 class App(ctk.CTk):
     """Main application window."""
