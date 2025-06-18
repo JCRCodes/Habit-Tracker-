@@ -39,13 +39,15 @@ class SplashScreenFrame(ctk.CTkFrame):
 
 class MainScreen(ctk.CTkFrame):
     """Main screen for viewing and managing habits."""
-    def __init__(self, master, show_add_habit_callback):
+    def __init__(self, master, show_add_habit_callback, show_view_habits_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
+
         # White overlay
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
         # Heading
+        
         ctk.CTkLabel(overlay, text="Habit Tracker", font=("Helevetica", 32, "bold"), text_color="#BC84AB").pack(pady=(40, 20))
 
         # Top Padding
@@ -66,16 +68,18 @@ class MainScreen(ctk.CTkFrame):
             ).pack(pady=10)
 
         # View My Habits Button
-        ctk.CTkButton(
+        self.view_habits_btn = ctk.CTkButton(
             overlay,
-            text="View My Habits",
+            text="View Habits",
             text_color="white",
             font=("Helevetica", 18, "bold"),
             fg_color="#BC84AB",
-            hover_color="#631F5D",
+            hover_color="#A0699B",
             height=80,
             width=200,
-        ).pack(pady=10)
+            command=self.master.show_view_habits_screen  # or self.show_view_habits_screen if in App
+        )
+        self.view_habits_btn.pack(pady=10)
 
         # View Streak History Button
         ctk.CTkButton(
@@ -114,6 +118,10 @@ class AddHabitFrame(ctk.CTkFrame):
         
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
+        
+        
+        # Function to Save Habit
+        
         
         # Heading Padding
         heading_padding = ctk.CTkFrame(
@@ -173,14 +181,14 @@ class AddHabitFrame(ctk.CTkFrame):
 
         
         # Habit Frequency Dropdown
-
         self.frequency_var = ctk.StringVar(value="Select Frequency")
         ctk.CTkLabel(
         overlay,
         text="Select Frequency",
         font=("Helevetica", 16),
-        text_color="#BC84AB")
-        
+        text_color="#BC84AB"
+        )
+
         self.frequency_menu = ctk.CTkOptionMenu(
         overlay,
         variable=self.frequency_var,
@@ -226,8 +234,6 @@ class AddHabitFrame(ctk.CTkFrame):
         width=200
         ).pack(pady=10)
         
-        
-        
         # Button Frame
         button_row = ctk.CTkFrame(
             overlay,
@@ -256,9 +262,27 @@ class AddHabitFrame(ctk.CTkFrame):
             font=("Helevetica", 16, "bold"),
             fg_color="#BC84AB",
             hover_color="#A0699B",
-            #command=self.show_main_screen,
+            command=show_main_callback,
             width=100
         ).pack(side="right", padx=5)
+
+class ViewHabitsFrame(ctk.CTkFrame):
+    """Frame for displaying user's habits."""
+    def __init__(self, master):
+        super().__init__(master)
+        self.configure(fg_color="#BC84AB")
+        overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
+        overlay.pack(expand=True, fill="both", padx=40, pady=40)
+        
+        
+        # Heading Padding
+        heading_padding = ctk.CTkFrame(
+        overlay,
+        height=20,
+        fg_color="white",
+        corner_radius=10
+        )
+        heading_padding.pack(pady=(20, 0), fill="x")
 
 class App(ctk.CTk):
     """Main application window."""
@@ -268,8 +292,9 @@ class App(ctk.CTk):
         self.geometry("800x600")
         # Initialize frames
         self.splash = SplashScreenFrame(self, self.show_main_screen)
-        self.main = MainScreen(self, self.show_add_habit_screen)
+        self.main = MainScreen(self, self.show_add_habit_screen, self.show_view_habits_screen)
         self.add_habit = AddHabitFrame(self, self.show_main_screen)
+        self.view_habits = ViewHabitsFrame(self)
         # Show splash screen first
         self.show_splash_screen()
 
@@ -284,10 +309,16 @@ class App(ctk.CTk):
     def show_add_habit_screen(self):
         self.hide_all_frames()
         self.add_habit.pack(expand=True, fill="both")
+        
+    def show_view_habits_screen(self):
+        self.hide_all_frames()
+        self.view_habits.pack(expand=True, fill="both")
 
     def hide_all_frames(self):
-        for frame in (self.splash, self.main, self.add_habit):
+        for frame in (self.splash, self.main, self.add_habit, self.view_habits):
             frame.pack_forget()
+            
+    
 
 if __name__ == "__main__":
     app = App()
