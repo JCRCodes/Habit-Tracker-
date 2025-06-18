@@ -6,6 +6,7 @@ from datetime import datetime
 import threading
 from dotenv import load_dotenv
 import customtkinter as ctk
+from tkinter import ttk
 from data_access import HabitDatabase
 
 # Load environment variables and connect to the database
@@ -15,26 +16,36 @@ if connection_string is None:
     raise ValueError("Database connection string must not be None. Check your .env file.")
 
 # db = HabitDatabase(connection_string)
+
 class SplashScreenFrame(ctk.CTkFrame):
     """Splash screen frame."""
     def __init__(self, master, show_main_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
-        # Top spacer
-        top_spacer = ctk.CTkFrame(self, height=200, fg_color="#BC84AB")
-        top_spacer.pack(fill="x")
         
-        # Centered splash content
-        ctk.CTkLabel(self, text="Habit Tracker is loading...", font=("Roboto", 40, "bold"), text_color="#FFFFFF").pack(pady=40)
-        progress = ctk.CTkProgressBar(self, mode="indeterminate", width=300, fg_color="#FFFFFF", progress_color="#631F5D")
+        #### Top Padding ####
+        
+        top_padding = ctk.CTkFrame(
+            self, 
+            fg_color="#BC84AB"
+        )
+        top_padding.pack(padx=20, pady=20)
+        
+        ctk.CTkLabel(
+            self,
+            text="Habit Tracker is loading...",
+            font=("Roboto", 40, "bold"),
+            text_color="#FFFFFF"
+        ).pack(pady=20)
+        progress = ctk.CTkProgressBar(
+            self,
+            mode="indeterminate",
+            width=300,
+            fg_color="#FFFFFF",
+            progress_color="#631F5D"
+        )
         progress.pack(pady=20)
         progress.start()
-        
-        # Bottom spacer 
-        bottom_spacer = ctk.CTkFrame(self, height=100, fg_color="#BC84AB")
-        bottom_spacer.pack(fill="x", side="bottom")
-        
-        # After 2 seconds, show main screen
         self.after(2000, show_main_callback)
 
 class MainScreen(ctk.CTkFrame):
@@ -42,64 +53,69 @@ class MainScreen(ctk.CTkFrame):
     def __init__(self, master, show_add_habit_callback, show_view_habits_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
-
-        # White overlay
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
-        # Heading
+        ctk.CTkLabel(
+            overlay,
+            text="Habit Tracker",
+            text_color="#664863",
+            font=("Roboto", 32, "bold"),
+            ).pack(pady=(20, 20))
         
-        ctk.CTkLabel(overlay, text="Habit Tracker", font=("Helevetica", 32, "bold"), text_color="#BC84AB").pack(pady=(40, 20))
-
-        # Top Padding
-        top_padding = ctk.CTkFrame(overlay, height=50, fg_color="white")
-        top_padding.pack(fill="x")
+        #### Button Frame 1 ####
         
-        # Add New Habit button
+        button_frame = ctk.CTkFrame(overlay, fg_color="white")
+        button_frame.pack(side="top", anchor="n", pady=80, padx=40)
+        
         ctk.CTkButton(
-            overlay,
-            text="Add New Habit",
-            text_color="white",
-            font=("Helevetica", 18, "bold"),
+            button_frame,
+            text="Add Habit",
+            text_color="#FFFFFF",
+            font=("Roboto", 16, "bold"),
             fg_color="#BC84AB",
-            hover_color="#A0699B",
-            height=80,
-            width=200,
-            command=show_add_habit_callback
-            ).pack(pady=10)
-
-        # View My Habits Button
-        self.view_habits_btn = ctk.CTkButton(
-            overlay,
+            hover_color="#A86B8C",
+            command=show_add_habit_callback,
+            width=150,
+            height=40
+        ).pack(padx=20, side="left")
+        ctk.CTkButton(
+            button_frame,
             text="View Habits",
-            text_color="white",
-            font=("Helevetica", 18, "bold"),
+            text_color="#FFFFFF",
+            font=("Roboto", 16, "bold"),
             fg_color="#BC84AB",
-            hover_color="#A0699B",
-            height=80,
-            width=200,
-            command=self.master.show_view_habits_screen  # or self.show_view_habits_screen if in App
-        )
-        self.view_habits_btn.pack(pady=10)
+            hover_color="#A86B8C",
+            command=show_view_habits_callback,
+            width=150,
+            height=40
+        ).pack(padx=20, side="left")
 
-        # View Streak History Button
+        #### Button Spacer ####
+        
+        button_spacer = ctk.CTkFrame(overlay, fg_color="white")
+        button_spacer.pack(expand=True, fill="both", pady=20)
+        
+        ctk.CTkLabel(
+            overlay,
+            fg_color= "white",
+            text_color="#664863",
+            text="Your Habits",
+            font=("Roboto", 20, "bold")
+        ).pack(pady=(20, 5))
+        self.habits_box = ctk.CTkTextbox(overlay, width=500, height=200)
+        self.habits_box.pack(pady=10)
+        action_frame = ctk.CTkFrame(overlay, fg_color="white")
+        action_frame.pack(pady=10)
         ctk.CTkButton(
-            overlay,
-            text="View Streak History",
-            text_color="white",
-            font=("Helevetica", 18, "bold"),
-            fg_color="#BC84AB",
-            hover_color="#631F5D",
-            height=80,
-            width=200,
-        ).pack(pady=10)
-
-        # Bottom Padding
-        bottom_padding = ctk.CTkFrame(
-            overlay,
-            height= 20,
-            fg_color="white"
-        )
-        bottom_padding.pack(fill="x", side="bottom")
+            action_frame,
+            text="Delete",
+            command=self.delete_habit
+        ).pack(side="left", padx=10)
+        ctk.CTkButton(
+            action_frame,
+            text="Amend",
+            command=self.amend_habit
+        ).pack(side="left", padx=10)
 
     def delete_habit(self):
         # Logic for deleting a habit
@@ -114,175 +130,184 @@ class AddHabitFrame(ctk.CTkFrame):
     def __init__(self, master, show_main_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
-        
-        
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
-        
-        
-        # Function to Save Habit
-        
-        
-        # Heading Padding
-        heading_padding = ctk.CTkFrame(
-        overlay,
-        height=20,
-        fg_color="white"    
-        )
-        heading_padding.pack(fill="x")
-        
-        # Heading Label
         ctk.CTkLabel(
-        overlay,
-        text="Add a New Habit",
-        font=("Helevetica",
-        28,
-        "bold"),
-        text_color="#BC84AB"
+            overlay,
+            text="Add a New Habit:",
+            text_color="#664863",
+            font=("Inter", 28, "bold")
         ).pack(pady=30)
         
-        # Top Padding
-        top_padding = ctk.CTkFrame(overlay, height=50, fg_color="white")
-        top_padding.pack(fill="x")
+        #### Add Habit Padding ####
         
-        
-        # Input fields for habit name and description
-        self.habit_entry = ctk.CTkEntry(overlay,
-        fg_color="#FFFFFF",
-        border_color="#BC84AB",
-        border_width=2,
-        text_color="#BC84AB",
-        placeholder_text="Habit name",
-        placeholder_text_color="#BC84AB",
-        corner_radius=10,
-        font=("Helevetica",
-        16),
-        width=300
-        ).pack(pady=10)
-
-        # Habit Name Entry Configuration
-        self.configure(
-        corner_radius=10,
-        fg_color="#BC84AB",
-        )
-        
-        # Habit Description Entry
-        self.desc_entry = ctk.CTkEntry(overlay,
-        fg_color="#FFFFFF",
-        border_color="#BC84AB",
-        border_width=2,
-        text_color="#BC84AB",
-        placeholder_text="Description",
-        placeholder_text_color="#BC84AB",
-        font=("Helevetica",
-        16),
-        width=300
-        ).pack(pady=10)
-
-        
-        # Habit Frequency Dropdown
-        self.frequency_var = ctk.StringVar(value="Select Frequency")
-        ctk.CTkLabel(
-        overlay,
-        text="Select Frequency",
-        font=("Helevetica", 16),
-        text_color="#BC84AB"
-        )
-
-        self.frequency_menu = ctk.CTkOptionMenu(
-        overlay,
-        variable=self.frequency_var,
-        values=["Daily", "Weekly", "Monthly"],
-        fg_color="#BC84AB",
-        button_color="#BC84AB",
-        button_hover_color="#A0699B",
-        text_color="#FFFFFF",
-        dropdown_fg_color="#FFFFFF",
-        dropdown_text_color="#BC84AB",  
-        dropdown_hover_color="#DBC4D9",
-        dropdown_font=("Helevetica", 16),
-        font=("Helevetica", 16),
-        width=200
-        )
-        
-        self.frequency_menu.set("Select Frequency")
-        self.frequency_menu.pack(pady=20)
-        
-        
-        # Habit Category Dropdown
-        self.category_var = ctk.StringVar(value="Select Category")
-        ctk.CTkLabel(
-        overlay,
-        text="Select Category",
-        font=("Helevetica", 16),
-        text_color="#BC84AB"
-        )
-        
-        self.frequency_menu = ctk.CTkOptionMenu(
-        overlay,
-        variable=self.category_var,
-        values=["Health", "Productivity", "Personal", "Other"],
-        fg_color="#BC84AB",
-        button_color="#BC84AB",
-        button_hover_color="#A0699B",
-        text_color="#FFFFFF",
-        dropdown_fg_color="#FFFFFF",
-        dropdown_text_color="#BC84AB",
-        dropdown_hover_color="#DBC4D9",
-        dropdown_font=("Helevetica", 16),
-        font=("Helevetica", 16),
-        width=200
-        ).pack(pady=10)
-        
-        # Button Frame
-        button_row = ctk.CTkFrame(
+        add_habit_padding = ctk.CTkFrame(
             overlay,
             fg_color="white",
-            corner_radius=10
-        )
-        button_row.pack(pady=30)
-        
-        ## Enter Habit Button
-        self.save_button = ctk.CTkButton(
-            button_row,
-            text="Save",
-            text_color="white",
-            font=("Helevetica", 16, "bold"),
-            fg_color="#BC84AB",
-            hover_color="#A0699B",
-            #command=self.save_habit,
-            width=100
-        ).pack(side="left", padx=5)
+            height=20,
+            width=200
+            )
+        add_habit_padding.pack(pady=10)
 
-        ## Back to Main Screen Button
-        self.back_button = ctk.CTkButton(
+        self.habit_entry = ctk.CTkEntry(overlay,
+                fg_color="white",
+                border_color="#BC84AB",
+                border_width=2,
+                placeholder_text="   Habit name",
+                font=("Inter", 20, "italic"), 
+                width=400,
+                height=60
+        )
+        self.habit_entry.pack(pady=10)
+        self.desc_entry = ctk.CTkEntry(overlay,
+                fg_color="white",
+                border_color="#BC84AB",
+                border_width=2,
+                placeholder_text="   Description",
+                width=400,
+                height=60
+        )
+        self.habit_entry.pack(pady=10)
+        
+        
+        self.desc_entry = ctk.CTkEntry(overlay,
+                fg_color="white",
+                border_color="#BC84AB",
+                border_width=2,
+                placeholder_text="   Description",
+                font=("Inter", 20, "italic"),
+                width=400,
+                height=60
+        )
+        self.desc_entry.pack(pady=10, padx=20)
+        self.frequency_var = ctk.StringVar(value="Frequency")
+        self.frequency_menu = ctk.CTkOptionMenu(
+            overlay,
+            fg_color="#BC84AB",
+            button_hover_color="#A86B8C",
+            width=200,
+            height=40,
+            values=["Daily", "Weekly", "Monthly"],
+            variable=self.frequency_var,
+            button_color="#BC84AB",
+            text_color="#FFFFFF",
+            font=("Inter", 16),
+            dropdown_font=("Inter", 16),
+            dropdown_fg_color="white",
+            dropdown_hover_color="#A86B8C",
+            dropdown_text_color="#676667",
+        )
+        
+        
+        self.frequency_menu.pack(pady=10)
+        button_row = ctk.CTkFrame(overlay, fg_color="white")
+        button_row.pack(pady=10, padx=40)
+        ctk.CTkButton(
+            button_row,
+            text="Enter Habit",
+            text_color="#FFFFFF",
+            font=("Inter", 12, "bold"),
+            fg_color="#BC84AB",
+            hover_color="#A86B8C",
+            width=100,
+            command=self.save_habit
+        ).pack(side="left", padx=10)
+        ctk.CTkButton(
             button_row,
             text="Back",
-            text_color="white",
-            font=("Helevetica", 16, "bold"),
+            text_color="#FFFFFF",
+            font=("Inter", 12, "bold"),
             fg_color="#BC84AB",
-            hover_color="#A0699B",
-            command=show_main_callback,
-            width=100
-        ).pack(side="right", padx=5)
+            hover_color="#A86B8C",
+            width=100,
+            command=show_main_callback
+        ).pack(side="left", padx=10)
+
+    def save_habit(self):
+        # Logic for saving a new habit
+        pass
 
 class ViewHabitsFrame(ctk.CTkFrame):
-    """Frame for displaying user's habits."""
-    def __init__(self, master):
+    """Frame for viewing all habits."""
+    def __init__(self, master, show_amend_habit_callback, show_main_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
-        
-        
-        # Heading Padding
-        heading_padding = ctk.CTkFrame(
-        overlay,
-        height=20,
-        fg_color="white",
-        corner_radius=10
+        ctk.CTkLabel(
+            overlay,
+            text="Your Habits",
+            font=("Roboto", 20, "bold")
+        ).pack(pady=(20, 5))
+        columns = ("Name", "Description", "Frequency")
+        self.tree = ttk.Treeview(
+            overlay,
+            columns=columns,
+            show="headings",
+            height=8
         )
-        heading_padding.pack(pady=(20, 0), fill="x")
+        for col in columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=200, anchor="center")
+        self.tree.pack(pady=20, padx=40, fill="x", anchor="n")
+        self.tree.insert("", "end", values=("Drink Water", "Stay hydrated", "Daily"))
+        self.tree.insert("", "end", values=("Read Book", "Read 10 pages", "Weekly"))
+        def on_habit_select(event):
+            selected = self.tree.selection()
+            if selected:
+                habit_data = self.tree.item(selected[0], "values")
+                show_amend_habit_callback(habit_data)
+        self.tree.bind("<<TreeviewSelect>>", on_habit_select)
+        ctk.CTkButton(
+            overlay,
+            text="Back to Main Screen",
+            command=show_main_callback
+        ).pack(pady=10)
+
+class AmendHabitFrame(ctk.CTkFrame):
+    """Frame for amending a selected habit."""
+    def __init__(self, master, habit_data, show_view_habits_callback):
+        super().__init__(master)
+        self.configure(fg_color="#BC84AB")
+        overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
+        overlay.pack(expand=True, fill="both", padx=40, pady=40)
+        ctk.CTkLabel(
+            overlay,
+            text="Amend Habit",
+            font=("Roboto", 24, "bold")
+        ).pack(pady=20)
+        self.name_entry = ctk.CTkEntry(overlay, placeholder_text="Name")
+        self.name_entry.insert(0, habit_data[0])
+        self.name_entry.pack(pady=10)
+        self.desc_entry = ctk.CTkEntry(overlay, placeholder_text="Description")
+        self.desc_entry.insert(0, habit_data[1])
+        self.desc_entry.pack(pady=10)
+        self.freq_entry = ctk.CTkEntry(overlay, placeholder_text="Frequency")
+        self.freq_entry.insert(0, habit_data[2])
+        self.freq_entry.pack(pady=10)
+        ctk.CTkButton(
+            overlay,
+            text="Save Changes",
+            command=self.save_changes
+        ).pack(pady=10)
+        ctk.CTkButton(
+            overlay,
+            text="Delete Habit",
+            command=self.delete_habit
+        ).pack(pady=10)
+        ctk.CTkButton(
+            overlay,
+            text="Back",
+            command=show_view_habits_callback
+        ).pack(pady=10)
+
+    def save_changes(self):
+        # Update the habit in the database here
+        pass
+
+    def delete_habit(self):
+        # Delete the habit from the database here
+        pass
 
 class App(ctk.CTk):
     """Main application window."""
@@ -290,12 +315,15 @@ class App(ctk.CTk):
         super().__init__()
         self.title("Habit Tracker")
         self.geometry("800x600")
-        # Initialize frames
         self.splash = SplashScreenFrame(self, self.show_main_screen)
         self.main = MainScreen(self, self.show_add_habit_screen, self.show_view_habits_screen)
         self.add_habit = AddHabitFrame(self, self.show_main_screen)
-        self.view_habits = ViewHabitsFrame(self)
-        # Show splash screen first
+        self.view_habits = ViewHabitsFrame(
+            self,
+            self.show_amend_habit_screen,
+            self.show_main_screen
+        )
+        self.amend_habit_frame = None
         self.show_splash_screen()
 
     def show_splash_screen(self):
@@ -309,16 +337,30 @@ class App(ctk.CTk):
     def show_add_habit_screen(self):
         self.hide_all_frames()
         self.add_habit.pack(expand=True, fill="both")
-        
+
     def show_view_habits_screen(self):
         self.hide_all_frames()
         self.view_habits.pack(expand=True, fill="both")
 
+    def show_amend_habit_screen(self, habit_data):
+        self.hide_all_frames()
+        self.amend_habit_frame = AmendHabitFrame(
+            self,
+            habit_data,
+            self.show_view_habits_screen
+        )
+        self.amend_habit_frame.pack(expand=True, fill="both")
+
     def hide_all_frames(self):
-        for frame in (self.splash, self.main, self.add_habit, self.view_habits):
-            frame.pack_forget()
-            
-    
+        for frame in [
+            self.splash,
+            self.main,
+            self.add_habit,
+            self.view_habits,
+            self.amend_habit_frame
+        ]:
+            if frame is not None:
+                frame.pack_forget()
 
 if __name__ == "__main__":
     app = App()
