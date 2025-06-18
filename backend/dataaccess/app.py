@@ -115,7 +115,15 @@ class AddHabitFrame(ctk.CTkFrame):
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
         
+        # Heading Padding
+        heading_padding = ctk.CTkFrame(
+        overlay,
+        height=20,
+        fg_color="white"    
+        )
+        heading_padding.pack(fill="x")
         
+        # Heading Label
         ctk.CTkLabel(
         overlay,
         text="Add a New Habit",
@@ -125,6 +133,10 @@ class AddHabitFrame(ctk.CTkFrame):
         text_color="#BC84AB"
         ).pack(pady=30)
         
+        # Top Padding
+        top_padding = ctk.CTkFrame(overlay, height=50, fg_color="white")
+        top_padding.pack(fill="x")
+        
         
         # Input fields for habit name and description
         self.habit_entry = ctk.CTkEntry(overlay,
@@ -133,6 +145,7 @@ class AddHabitFrame(ctk.CTkFrame):
         border_width=2,
         text_color="#BC84AB",
         placeholder_text="Habit name",
+        placeholder_text_color="#BC84AB",
         corner_radius=10,
         font=("Helevetica",
         16),
@@ -152,6 +165,7 @@ class AddHabitFrame(ctk.CTkFrame):
         border_width=2,
         text_color="#BC84AB",
         placeholder_text="Description",
+        placeholder_text_color="#BC84AB",
         font=("Helevetica",
         16),
         width=300
@@ -171,16 +185,80 @@ class AddHabitFrame(ctk.CTkFrame):
         overlay,
         variable=self.frequency_var,
         values=["Daily", "Weekly", "Monthly"],
-        fg_color="#FFFFFF",
+        fg_color="#BC84AB",
         button_color="#BC84AB",
         button_hover_color="#A0699B",
-        text_color="#BC84AB",
+        text_color="#FFFFFF",
+        dropdown_fg_color="#FFFFFF",
+        dropdown_text_color="#BC84AB",  
+        dropdown_hover_color="#DBC4D9",
+        dropdown_font=("Helevetica", 16),
         font=("Helevetica", 16),
         width=200
         )
         
         self.frequency_menu.set("Select Frequency")
-        self.frequency_menu.pack(pady=10)
+        self.frequency_menu.pack(pady=20)
+        
+        
+        # Habit Category Dropdown
+        self.category_var = ctk.StringVar(value="Select Category")
+        ctk.CTkLabel(
+        overlay,
+        text="Select Category",
+        font=("Helevetica", 16),
+        text_color="#BC84AB"
+        )
+        
+        self.frequency_menu = ctk.CTkOptionMenu(
+        overlay,
+        variable=self.category_var,
+        values=["Health", "Productivity", "Personal", "Other"],
+        fg_color="#BC84AB",
+        button_color="#BC84AB",
+        button_hover_color="#A0699B",
+        text_color="#FFFFFF",
+        dropdown_fg_color="#FFFFFF",
+        dropdown_text_color="#BC84AB",
+        dropdown_hover_color="#DBC4D9",
+        dropdown_font=("Helevetica", 16),
+        font=("Helevetica", 16),
+        width=200
+        ).pack(pady=10)
+        
+        
+        
+        # Button Frame
+        button_row = ctk.CTkFrame(
+            overlay,
+            fg_color="white",
+            corner_radius=10
+        )
+        button_row.pack(pady=30)
+        
+        ## Enter Habit Button
+        self.save_button = ctk.CTkButton(
+            button_row,
+            text="Save",
+            text_color="white",
+            font=("Helevetica", 16, "bold"),
+            fg_color="#BC84AB",
+            hover_color="#A0699B",
+            #command=self.save_habit,
+            width=100
+        ).pack(side="left", padx=5)
+
+        ## Back to Main Screen Button
+        self.back_button = ctk.CTkButton(
+            button_row,
+            text="Back",
+            text_color="white",
+            font=("Helevetica", 16, "bold"),
+            fg_color="#BC84AB",
+            hover_color="#A0699B",
+            #command=self.show_main_screen,
+            width=100
+        ).pack(side="right", padx=5)
 
 class App(ctk.CTk):
     """Main application window."""
