@@ -77,17 +77,8 @@ class MainScreen(ctk.CTkFrame):
         button_frame = ctk.CTkFrame(overlay, fg_color="white")
         button_frame.pack(side="top", anchor="n", pady=60, padx=40)
         
-        ctk.CTkButton(
-            button_frame,
-            text="Add a Habit",
-            text_color="#FFFFFF",
-            font=("Inter", 24, "bold"),
-            fg_color="#BC84AB",
-            hover_color="#A86B8C",
-            command=show_add_habit_callback,
-            width=200,
-            height=50
-        ).pack(padx=20, pady=10)
+        
+        #### View Habits ####
         ctk.CTkButton(
             button_frame,
             text="View my Habits",
@@ -98,7 +89,20 @@ class MainScreen(ctk.CTkFrame):
             command=show_view_habits_callback,
             width=200,
             height=50
-        ).pack(padx=20, pady=10)
+        ).pack(padx=20, pady=20)
+        
+        #### Add Habits #### 
+        ctk.CTkButton(
+            button_frame,
+            text="Add a Habit",
+            text_color="#FFFFFF",
+            font=("Inter", 22, "bold"),
+            fg_color="#BC84AB",
+            hover_color="#A86B8C",
+            command=show_add_habit_callback,
+            width=170,
+            height=50
+        ).pack(padx=20, pady=20)
 
         #### Button Spacer ####
         
@@ -147,14 +151,25 @@ class AddHabitFrame(ctk.CTkFrame):
             text="Add a New Habit:",
             text_color="#664863",
             font=("Inter", 28, "bold")
-        ).pack(pady=30)
+        ).pack(pady=10, padx=20)
+        
+        
+        
+        add_habit_heading = ctk.CTkLabel(
+            overlay,
+            text="Please enter the details of your new habit below.",
+            text_color="#3D203A",
+            font=("Inter", 16, "italic")
+        )
+        add_habit_heading.pack(pady=(20,5), padx=20)
+        
         
         #### Add Habit Padding ####
         
         add_habit_padding = ctk.CTkFrame(
             overlay,
             fg_color="white",
-            height=20,
+            height=10,
             width=200
             )
         add_habit_padding.pack(pady=10)
@@ -199,12 +214,13 @@ class AddHabitFrame(ctk.CTkFrame):
             dropdown_fg_color="white",
             dropdown_hover_color="#A86B8C",
             dropdown_text_color="#676667",
-        )
+        ).pack(pady=(10,20))
         
         
-        self.frequency_menu.pack(pady=10)
         button_row = ctk.CTkFrame(overlay, fg_color="white")
         button_row.pack(pady=10, padx=40)
+        
+        
         ctk.CTkButton(
             button_row,
             text="Enter Habit",
@@ -214,7 +230,7 @@ class AddHabitFrame(ctk.CTkFrame):
             hover_color="#A86B8C",
             width=100,
             command=self.save_habit
-        ).pack(side="left", padx=10)
+        ).pack(side="left", pady=10, padx=10)
         ctk.CTkButton(
             button_row,
             text="Back",
@@ -224,7 +240,7 @@ class AddHabitFrame(ctk.CTkFrame):
             hover_color="#A86B8C",
             width=100,
             command=show_main_callback
-        ).pack(side="left", padx=10)
+        ).pack(side="bottom", pady=10, padx=10)
 
     def save_habit(self):
         # Logic for saving a new habit
@@ -243,9 +259,20 @@ class ViewHabitsFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             overlay,
             text="Your Habits",
-            text_color="#3D203A",
-            font=("Inter", 24, "bold")
+            text_color="#664863",
+            font=("Inter", 28, "bold")
         ).pack(pady=(20, 5))
+        
+        
+        habit_view_description = ctk.CTkLabel(
+            overlay,
+            text="These are your habits. \nDouble-click a habit to view its details and amend.",
+            text_color="#3D203A",
+            font=("Inter", 16, "italic")
+        )
+        habit_view_description.pack(pady=(20, 20))
+        
+        
         columns = ("Name", "Description", "Frequency")
         self.tree = ttk.Treeview(
             overlay,
@@ -262,15 +289,6 @@ class ViewHabitsFrame(ctk.CTkFrame):
         self.tree.pack(pady=20, padx=40, fill="x", anchor="n")
         self.tree.insert("", "end", values=("Drink Water", "Stay hydrated", "Daily"))
         self.tree.insert("", "end", values=("Read Book", "Read 10 pages", "Weekly"))
-        
-        
-        habit_view_description = ctk.CTkLabel(
-            overlay,
-            text="These are your habits. Double-click a habit to view its details and amend.",
-            text_color="#3D203A",
-            font=("Inter", 16, "italic")
-        )
-        habit_view_description.pack(pady=(20, 20))
 
         def on_habit_select(_event):
             selected = self.tree.selection()
@@ -306,11 +324,18 @@ class AmendHabitFrame(ctk.CTkFrame):
             overlay,
             fg_color="#FFFFFF",
             corner_radius=20,
-            text="Amend Habit",
-            font=("Inter", 32, "bold"),
-            text_color="#BC84AB"
+            text="Habit Viewer",
+            text_color="#664863",
+            font=("Inter", 28, "bold")
         ).pack(pady=20)
 
+        habit_view_description = ctk.CTkLabel(
+            overlay,
+            text="You can view, amend and delete your habit here.\nPlease make any changes and click 'Save Changes'.",
+            text_color="#47182B",
+            width=200,
+            font=("Inter", 16, "italic")
+        ).pack(pady=5, padx=40)
 
         #### Top Padding #### 
         top_padding = ctk.CTkFrame(
@@ -324,7 +349,7 @@ class AmendHabitFrame(ctk.CTkFrame):
         
         self.name_entry = ctk.CTkEntry(overlay, 
         fg_color="#FFFFFF",
-        text_color="#BC84AB",
+        text_color="#535353",
         border_color="#BC84AB",
         height=50,
         width=200,
@@ -335,7 +360,7 @@ class AmendHabitFrame(ctk.CTkFrame):
         
         self.desc_entry = ctk.CTkEntry(overlay, 
         fg_color="#FFFFFF",
-        text_color="#BC84AB",
+        text_color="#5A5A5A",
         border_color="#BC84AB",
         height=50,
         width=200,
@@ -346,7 +371,7 @@ class AmendHabitFrame(ctk.CTkFrame):
         
         self.freq_entry = ctk.CTkEntry(overlay,
         fg_color="#FFFFFF",
-        text_color="#BC84AB",
+        text_color="#5F5F5F",
         border_color="#BC84AB",
         height=50,
         width=200,
