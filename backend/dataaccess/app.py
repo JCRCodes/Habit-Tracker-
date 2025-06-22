@@ -7,6 +7,7 @@ import threading
 from dotenv import load_dotenv
 import customtkinter as ctk
 from tkinter import ttk
+from tkinter import messagebox
 from data_access import HabitDatabase
 
 # Load environment variables and connect to the database
@@ -34,7 +35,7 @@ class SplashScreenFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             self,
             text="Habit Tracker is loading...",
-            font=("Roboto", 40, "bold"),
+            font=("Inter", 40, "bold"),
             text_color="#FFFFFF"
         ).pack(pady=20)
         progress = ctk.CTkProgressBar(
@@ -57,38 +58,47 @@ class MainScreen(ctk.CTkFrame):
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
         ctk.CTkLabel(
             overlay,
-            text="Habit Tracker",
-            text_color="#664863",
-            font=("Roboto", 32, "bold"),
+            text="Welcome to your Habit Tracker:",
+            text_color="#9F5D93",
+            font=("Inter", 32, "bold"),
             ).pack(pady=(20, 20))
         
         #### Button Frame 1 ####
         
+        ### Heading 1 ####
+        
+        ctk.CTkLabel(
+            overlay,
+            text="What would you like to do?",
+            text_color="#664863",   
+            font=("Inter", 24, "bold")
+        ).pack(pady=(10, 10))
+        
         button_frame = ctk.CTkFrame(overlay, fg_color="white")
-        button_frame.pack(side="top", anchor="n", pady=80, padx=40)
+        button_frame.pack(side="top", anchor="n", pady=60, padx=40)
         
         ctk.CTkButton(
             button_frame,
-            text="Add Habit",
+            text="Add a Habit",
             text_color="#FFFFFF",
-            font=("Roboto", 16, "bold"),
+            font=("Inter", 24, "bold"),
             fg_color="#BC84AB",
             hover_color="#A86B8C",
             command=show_add_habit_callback,
-            width=150,
-            height=40
-        ).pack(padx=20, side="left")
+            width=200,
+            height=50
+        ).pack(padx=20, pady=10)
         ctk.CTkButton(
             button_frame,
-            text="View Habits",
+            text="View my Habits",
             text_color="#FFFFFF",
-            font=("Roboto", 16, "bold"),
+            font=("Inter", 22, "bold"),
             fg_color="#BC84AB",
             hover_color="#A86B8C",
             command=show_view_habits_callback,
-            width=150,
-            height=40
-        ).pack(padx=20, side="left")
+            width=200,
+            height=50
+        ).pack(padx=20, pady=10)
 
         #### Button Spacer ####
         
@@ -98,10 +108,10 @@ class MainScreen(ctk.CTkFrame):
         ctk.CTkLabel(
             overlay,
             fg_color= "white",
-            text_color="#664863",
+            text_color="#94508D",
             text="Your Habits",
-            font=("Roboto", 20, "bold")
-        ).pack(pady=(20, 5))
+            font=("Inter", 32, "bold")
+        ).pack(pady=(20, 10))
         self.habits_box = ctk.CTkTextbox(overlay, width=500, height=200)
         self.habits_box.pack(pady=10)
         action_frame = ctk.CTkFrame(overlay, fg_color="white")
@@ -227,55 +237,74 @@ class AddHabitFrame(ctk.CTkFrame):
         # Logic for saving a new habit
         pass
 
+
+#### VIEW HABITS FRAME ####
 class ViewHabitsFrame(ctk.CTkFrame):
     """Frame for viewing all habits."""
-    def __init__(self, master, show_amend_habit_callback, show_main_callback):
+    def __init__(self, master, on_habit_double_click, show_main_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
+
         ctk.CTkLabel(
             overlay,
             text="Your Habits",
-            font=("Roboto", 20, "bold")
+            text_color="#3D203A",
+            font=("Inter", 24, "bold")
         ).pack(pady=(20, 5))
         columns = ("Name", "Description", "Frequency")
         self.tree = ttk.Treeview(
             overlay,
             columns=columns,
             show="headings",
-            height=8
+            height=8,
         )
         for col in columns:
             self.tree.heading(col, text=col)
             self.tree.column(col, width=200, anchor="center")
+        style = ttk.Style()
+        style.configure("Treeview", font=("Inter", 18), background="white", foreground="black", rowheight=30)
+        style.configure("Treeview.Heading", background="#BC84AB", foreground="black", font=("Inter", 20, "bold"))
         self.tree.pack(pady=20, padx=40, fill="x", anchor="n")
         self.tree.insert("", "end", values=("Drink Water", "Stay hydrated", "Daily"))
         self.tree.insert("", "end", values=("Read Book", "Read 10 pages", "Weekly"))
+
         def on_habit_select(event):
             selected = self.tree.selection()
             if selected:
                 habit_data = self.tree.item(selected[0], "values")
-                show_amend_habit_callback(habit_data)
-        self.tree.bind("<<TreeviewSelect>>", on_habit_select)
+                on_habit_double_click(habit_data)
+        self.tree.bind("<Double-1>", on_habit_select)
+
+        # Add Back to Main Screen button at the bottom
         ctk.CTkButton(
             overlay,
+            fg_color="#BC84AB",
+            hover_color="#A86B8C",
             text="Back to Main Screen",
+            font=("Inter", 16, "bold"),
+            text_color="#FFFFFF",
             command=show_main_callback
-        ).pack(pady=10)
-
+        ).pack(side="bottom", pady=20)
 class AmendHabitFrame(ctk.CTkFrame):
     """Frame for amending a selected habit."""
     def __init__(self, master, habit_data, show_view_habits_callback):
         super().__init__(master)
         self.configure(fg_color="#BC84AB")
+        self.show_view_habits_callback = show_view_habits_callback
+
+        #### AMEND HABIT FRAME ####
+
         overlay = ctk.CTkFrame(self, fg_color="white", corner_radius=20)
         overlay.pack(expand=True, fill="both", padx=40, pady=40)
         ctk.CTkLabel(
             overlay,
             text="Amend Habit",
-            font=("Roboto", 24, "bold")
+            font=("Inter", 32, "bold"),
+            text_color="#BC84AB"
         ).pack(pady=20)
+
         self.name_entry = ctk.CTkEntry(overlay, placeholder_text="Name")
         self.name_entry.insert(0, habit_data[0])
         self.name_entry.pack(pady=10)
@@ -298,7 +327,7 @@ class AmendHabitFrame(ctk.CTkFrame):
         ctk.CTkButton(
             overlay,
             text="Back",
-            command=show_view_habits_callback
+            command=self.show_view_habits_callback
         ).pack(pady=10)
 
     def save_changes(self):
