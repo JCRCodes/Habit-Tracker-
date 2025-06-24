@@ -323,7 +323,7 @@ class AddHabitFrame(ctk.CTkFrame):
         submit_btn = ctk.CTkButton(
             overlay,
             command=self.save_habit,
-            text="Subit Habit",
+            text="Submit Habit",
             text_color="#FFFFFF",
             font=("Inter", 24),
             height=50,
