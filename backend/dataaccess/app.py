@@ -226,18 +226,19 @@ class ViewHabitsFrame(ctk.CTkFrame):
     
     # VIEW HABITS
     def load_habits(self):
-        # Clear and reload habits from db
-        self.tree.delete(*self.tree.get_children())
-        for habit in self.db.get_user_habits(user_id=1):  # Replace with actual user logic
-            self.tree.insert("", "end", values=habit[1:5])
+    self.tree.delete(*self.tree.get_children())
+    for habit in self.db.get_user_habits(user_id=1):  # habit[0] is the habit_id
+        self.tree.insert("", "end", iid=habit[0], values=habit[1:5])  # habit[1:5] are the habit details (name, description, category, frequency)   
 
     # DOUBLE CLICK TO AMEND HABIT
     def on_double_click(self, event):
-        selected = self.tree.selection()
-        if selected:
-            habit_data = self.tree.item(selected[0], "values")
-            # You may need to fetch the habit ID separately
-            self.show_amend_callback(habit_data)      
+    selected = self.tree.selection()
+    if selected:
+        habit_id = selected[0]
+        values = self.tree.item(habit_id, "values")
+        # Prepend habit_id to values tuple
+        habit_data = (habit_id,) + values
+        self.show_amend_callback(habit_data) 
 
 # --- Add Habit Frame ---
 class AddHabitFrame(ctk.CTkFrame):
@@ -380,13 +381,104 @@ class AmendHabitFrame(ctk.CTkFrame):
             corner_radius=20
         )
         overlay.pack(expand=True, fill="both", padx=20, pady=20)
-
+        
+        # ---- Widgets ----
+        
+        amend_habit_label = ctk.CTkLabel(
+            overlay,
+            text="Amend Habit",
+            font=("Inter", 32, "bold"),
+            text_color="#FFFFFF"
+        ).pack(padx=40, pady=40)
+        
+        # ---- Padding ----
+        
+        top_padding = ctk.CTkFrame(
+            overlay,
+            fg_color="#87A988",
+            height=10,
+            width=200
+        ).pack(pady=5)
+        
+        
+        # ---- Input Fields ----
+        
+        self.name_entry = ctk.CTkEntry(overlay, placeholder_text="Habit Name", font=("Inter", 20, "italic"))
+        self.name_entry.configure(width=300,
+            fg_color="#FFFFFF",
+            border_color="#FFFFFF",
+            text_color="#000000",
+            placeholder_text_color="#757575"
+        )
+        self.name_entry.insert(0, habit_data[1])  # Pre-fill with existing habit name
+        self.name_entry.pack(pady=10, padx=20)
+        
+        self.description_entry = ctk.CTkEntry(overlay, placeholder_text="Description", font=("Inter", 20, "italic"))
+        self.description_entry.configure(width=300,
+            fg_color="#FFFFFF",
+            border_color="#FFFFFF",
+            text_color="#000000",
+            placeholder_text_color="#757575"
+        )
+        self.description_entry.insert(0, habit_data[2])  # Pre-fill with existing description
+        self.description_entry.pack(pady=10, padx=20)
+        
+        self.category_entry = ctk.CTkEntry(overlay, placeholder_text="Category", font=("Inter", 20, "italic"))
+        self.category_entry.configure(width=300,
+            fg_color="#FFFFFF",
+            border_color="#FFFFFF",
+            text_color="#000000",
+            placeholder_text_color="#757575"
+        )
+        self.category_entry.insert(0, habit_data[3])  # Pre-fill with existing category
+        self.category_entry.pack(pady=10, padx=20)
+        
+        self.dropdown = ctk.CTkOptionMenu(
+            overlay,
+            values=["Daily", "Weekly", "Monthly", "Yearly"],
+            fg_color="#FFFFFF",
+            text_color="#757575",
+            font=("Inter", 20, "italic")
+        )
+        self.dropdown.set("Frequency")
+        self.dropdown.configure(width=300)
+        self.dropdown.pack(pady=10, padx=20)
+        
+        # ---- Buttons ----
+        
+        # Save Changes Button
+        save_changes_btn = ctk.CTkButton(
+            overlay,
+            command=self.update_habit,
+            text="Save Changes",
+            text_color="#FFFFFF",
+            font=("Inter", 24),
+            height=50,
+            width=200,
+            fg_color="#C289B0",
+            hover_color="#631F5D",
+        ).pack(pady=20, padx=20)
+        
+        # Back to View Habits Button
+        back_to_view_btn = ctk.CTkButton(
+            overlay,
+            command=self.show_view_habits_callback,
+            text="Back to View Habits",
+            text_color="#FFFFFF",
+            font=("Inter", 18),
+            height=30,
+            width=200,
+            fg_color="#C289B0",
+            hover_color="#631F5D",
+        ).pack(side="bottom", pady=20, padx=20)
+        
+    # CRUD Operations
     def update_habit(self):
         user_id = 1  # Replace with actual user logic
         name = self.name_entry.get()
         desc = self.description_entry.get()
         category = self.category_entry.get()
-        frequency = self.frequency_dropdown.get()
+        frequency = self.dropdown.get()
         success = self.db.update_habit(
             habit_id=self.habit_id,
             user_id=user_id,
