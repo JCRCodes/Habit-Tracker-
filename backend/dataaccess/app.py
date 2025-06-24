@@ -19,12 +19,12 @@ class SplashScreenFrame(ctk.CTkFrame):
     """Splash screen frame."""
     def __init__(self, master, show_main_callback):
         super().__init__(master)
-        self.configure(fg_color="#BC84AB")
+        self.configure(fg_color="#84BC95")
         
         #### Top Padding ####
         top_padding = ctk.CTkFrame(
             self, 
-            fg_color="#BC84AB"
+            fg_color="#84BC95",
         )
         top_padding.pack(padx=20, pady=20)
         
@@ -48,17 +48,18 @@ class SplashScreenFrame(ctk.CTkFrame):
 
 # --- Main Application Window ---
 class App(ctk.CTk):
-    def __init__(self, connection_string):
+    def __init__(self, connection_string, user_id=1):
         super().__init__()
         self.db = HabitDatabase(connection_string)
+        self.user_id = user_id
         self.title("Habit Tracker")
         self.geometry("800x600")
 
         # Frames
         self.frames = {}
         self.frames["main"] = MainScreen(self, self.show_add_habit, self.show_view_habits)
-        self.frames["add"] = AddHabitFrame(self, self.show_main, self.show_view_habits, self.db)
-        self.frames["view"] = ViewHabitsFrame(self, self.show_amend_habit, self.show_main, self.db)
+        self.frames["add"] = AddHabitFrame(self, self.show_main, self.show_view_habits, self.db, self.user_id)
+        self.frames["view"] = ViewHabitsFrame(self, self.show_amend_habit, self.show_main, self.db, self.user_id)
         self.frames["amend"] = None  # Created as needed
         self.show_main()
         
@@ -79,7 +80,7 @@ class App(ctk.CTk):
 
     def show_amend_habit(self, habit_data):
         self.hide_all_frames()
-        self.frames["amend"] = AmendHabitFrame(self, habit_data, self.show_view_habits, self.db)
+        self.frames["amend"] = AmendHabitFrame(self, habit_data, self.show_view_habits, self.db, self.user_id)
         self.frames["amend"].pack(expand=True, fill="both")
 
     def hide_all_frames(self):
@@ -147,9 +148,10 @@ class MainScreen(ctk.CTkFrame):
     
 # ---- View Habits Frame ---
 class ViewHabitsFrame(ctk.CTkFrame):
-    def __init__(self, master, show_amend_callback, show_main_callback, db):
+    def __init__(self, master, show_amend_callback, show_main_callback, db, user_id):
         super().__init__(master)
         self.db = db
+        self.user_id = user_id
         self.show_amend_callback = show_amend_callback
         self.show_main_callback = show_main_callback
         self.configure(fg_color="#FFFFFF")
@@ -219,7 +221,7 @@ class ViewHabitsFrame(ctk.CTkFrame):
     # View Habits
     def load_habits(self):
         self.tree.delete(*self.tree.get_children())
-        for habit in self.db.get_user_habits(user_id=1):  # habit[0] is the habit_id
+        for habit in self.db.get_user_habits(user_id=self.user_id):  # habit[0] is the habit_id
             self.tree.insert("", "end", iid=habit[0], values=habit[1:5])  # habit[1:5] are the habit details (name, description, category, frequency)   
 
     # DOUBLE CLICK TO AMEND HABIT
@@ -228,15 +230,15 @@ class ViewHabitsFrame(ctk.CTkFrame):
         if selected:
             habit_id = selected[0]
             values = self.tree.item(habit_id, "values")
-            # Prepend habit_id to values tuple
-            habit_data = (habit_id,), values
-            self.show_amend_callback(habit_data) 
+            habit_data = (habit_id,) + values
+            self.show_amend_callback(habit_data)
 
 # --- Add Habit Frame ---
 class AddHabitFrame(ctk.CTkFrame):
-    def __init__(self, master, show_main_callback, show_view_habits_callback, db):
+    def __init__(self, master, show_main_callback, show_view_habits_callback, db, user_id):
         super().__init__(master)
         self.db = db
+        self.user_id = user_id
         self.show_main_callback = show_main_callback
         self.show_view_habits_callback = show_view_habits_callback
         
@@ -247,7 +249,8 @@ class AddHabitFrame(ctk.CTkFrame):
             self, 
             fg_color="#87A988", 
             corner_radius=20
-        ).pack(expand=True, fill="both", padx=20, pady=20)
+        )
+        overlay.pack(expand=True, fill="both", padx=20, pady=20)
         
         # Add Habit Label
         add_habit_label = ctk.CTkLabel(
@@ -341,11 +344,25 @@ class AddHabitFrame(ctk.CTkFrame):
 
     # SAVE HABIT
     def save_habit(self):
-        user_id = 1
-        name = self.name_entry.get()
-        desc = self.description_entry.get()
-        category = self.category_entry.get()
-        frequency = self.dropdown.get()
+        user_id = self.user_id
+        name = self.name_entry.get().strip()
+        if not name:
+            messagebox.showerror("Error", "Habit name cannot be empty.")
+            return
+        desc = self.description_entry.get().strip()
+        if not name:
+            messagebox.showerror("Error", "Description cannot be empty.")
+            return
+        category = self.category_entry.get().strip()
+        if not category:
+            messagebox.showerror("Error", "Category cannot be empty.")
+            return
+        frequency = self.dropdown.get().strip()
+        if not frequency or frequency == "Frequency":
+            messagebox.showerror("Error", "Please select a frequency.")
+            return
+        
+        
         success = self.db.add_habit(
             user_id=user_id,
             habit_name=name,
@@ -361,9 +378,10 @@ class AddHabitFrame(ctk.CTkFrame):
 
 # --- Amend Habit Frame ---
 class AmendHabitFrame(ctk.CTkFrame):
-    def __init__(self, master, habit_data, show_view_habits_callback, db):
+    def __init__(self, master, habit_data, show_view_habits_callback, db, user_id):
         super().__init__(master)
         self.db = db
+        self.user_id = user_id
         self.configure(fg_color="#FFFFFF")
         
         self.habit_id = habit_data[0]
@@ -486,11 +504,23 @@ class AmendHabitFrame(ctk.CTkFrame):
     # ---- CRUD Operators ----
     
     def update_habit(self):
-        user_id = 1  # Replace with actual user logic
+        user_id = self.user_id  # Use dynamic user_id
         name = self.name_entry.get()
+        if not name:
+            messagebox.showerror("Error", "Habit name cannot be empty.")
+            return
         desc = self.description_entry.get()
+        if not desc:
+            messagebox.showerror("Error", "Description cannot be empty.")
+            return
         category = self.category_entry.get()
+        if not category:
+            messagebox.showerror("Error", "Category cannot be empty.")
+            return
         frequency = self.dropdown.get()
+        if not frequency or frequency == "Frequency":
+            messagebox.showerror("Error", "Please select a frequency.")
+            return
         success = self.db.update_habit(
             habit_id=self.habit_id,
             user_id=user_id,
@@ -520,5 +550,6 @@ if __name__ == "__main__":
     connection_string = os.getenv("DB_CONNECTION_STRING")
     if not connection_string:
         raise ValueError("DB_CONNECTION_STRING environment variable is not set.")
-    app = App(connection_string)
+    # For now, user_id is 1; replace with login logic as needed
+    app = App(connection_string, user_id=1)
     app.mainloop()
