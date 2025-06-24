@@ -307,6 +307,8 @@ class AddHabitFrame(ctk.CTkFrame):
             values=["Daily", "Weekly", "Monthly", "Yearly"],
             fg_color="#FFFFFF",
             text_color="#757575",
+            button_color="#FFFFFF",
+            button_hover_color="#631F5D",
             font=("Inter", 20, "italic")
         )
         self.dropdown.set("Frequency")
