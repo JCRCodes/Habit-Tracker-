@@ -8,7 +8,6 @@ from tkinter import ttk
 from tkinter import messagebox
 from data_access import HabitDatabase
 
-# Load environment variables and connect to the database
 load_dotenv()
 connection_string = os.getenv("DB_CONNECTION_STRING")
 if connection_string is None:
@@ -23,7 +22,6 @@ class SplashScreenFrame(ctk.CTkFrame):
         self.configure(fg_color="#BC84AB")
         
         #### Top Padding ####
-        
         top_padding = ctk.CTkFrame(
             self, 
             fg_color="#BC84AB"
@@ -59,9 +57,10 @@ class App(ctk.CTk):
         # Instantiate frames
         self.frames = {}
         self.frames["main"] = MainScreen(self, self.show_add_habit, self.show_view_habits)
-        self.frames["add"] = AddHabitFrame(self, self.show_main, self.db)
+        self.frames["add"] = AddHabitFrame(self, self.show_main, self.show_view_habits, self.db)
         self.frames["view"] = ViewHabitsFrame(self, self.show_amend_habit, self.show_main, self.db)
         self.frames["amend"] = None  # Created as needed
+
 
         self.show_main()
         
@@ -170,8 +169,6 @@ class ViewHabitsFrame(ctk.CTkFrame):
         )
         overlay.pack(expand=True, fill="both", padx=20, pady=20)
         
-        
-        
         # ----Heading & Padding ----
         
         welcome_label = ctk.CTkLabel(
@@ -195,9 +192,9 @@ class ViewHabitsFrame(ctk.CTkFrame):
         show="headings")
         
         style= ttk.Style()
-        style.configure("Treeview", background="#FFFFFF", foreground="#FFFFFF", font=("Inter", 20))
-
-        self.tree.pack(expand=True, fill="both")
+        style.configure("Treeview", background="#FFFFFF", foreground="#000000", font=("Inter", 20))
+        rowheight = 50
+        style.configure("Treeview", rowheight=rowheight)
         self.tree.bind("<Double-1>", self.on_double_click)
         
         # ---- Treeview Columns ----
@@ -205,15 +202,13 @@ class ViewHabitsFrame(ctk.CTkFrame):
         self.tree.heading("Description", text="Description")
         self.tree.heading("Category", text="Category")
         self.tree.heading("Frequency", text="Frequency")
-        self.tree.column("Name", anchor="center")
-        self.tree.column("Description", anchor="center")
-        self.tree.column("Category", anchor="center")
-        self.tree.column("Frequency", anchor="center")
+        self.tree.column("Name", anchor="center", stretch=True)
+        self.tree.column("Description", anchor="center", stretch=True)
+        self.tree.column("Category", anchor="center", stretch=True)
+        self.tree.column("Frequency", anchor="center", stretch=True)
         self.tree.pack(expand=True, fill="both", padx=20, pady=20)
         
         # ---- Widgets ----
-
-        
         back_to_main_btn = ctk.CTkButton(
             overlay,
             command = show_main_callback,
@@ -229,12 +224,12 @@ class ViewHabitsFrame(ctk.CTkFrame):
         
     # CRUD Operations
     
-    # LOAD HABITS
+    # VIEW HABITS
     def load_habits(self):
         # Clear and reload habits from db
         self.tree.delete(*self.tree.get_children())
         for habit in self.db.get_user_habits(user_id=1):  # Replace with actual user logic
-            self.tree.insert("", "end", values=habit[1:5])  # Adjust indices as needed
+            self.tree.insert("", "end", values=habit[1:5])
 
     # DOUBLE CLICK TO AMEND HABIT
     def on_double_click(self, event):
@@ -246,10 +241,11 @@ class ViewHabitsFrame(ctk.CTkFrame):
 
 # --- Add Habit Frame ---
 class AddHabitFrame(ctk.CTkFrame):
-    def __init__(self, master, show_main_callback, db):
+    def __init__(self, master, show_main_callback, show_view_habits_callback, db):
         super().__init__(master)
         self.db = db
         self.show_main_callback = show_main_callback
+        self.show_view_habits_callback = show_view_habits_callback
         
         self.configure(fg_color="#FFFFFF")
         
@@ -309,16 +305,16 @@ class AddHabitFrame(ctk.CTkFrame):
         )
         self.category_entry.pack(pady=10, padx=20)
         
-        dropdown = ctk.CTkOptionMenu(
+        self.dropdown = ctk.CTkOptionMenu(
             overlay,
             values=["Daily", "Weekly", "Monthly", "Yearly"],
             fg_color="#FFFFFF",
             text_color="#757575",
             font=("Inter", 20, "italic")
         )
-        dropdown.set("Frequency")
-        dropdown.configure(width=300)
-        dropdown.pack(pady=10, padx=20)
+        self.dropdown.set("Frequency")
+        self.dropdown.configure(width=300)
+        self.dropdown.pack(pady=10, padx=20)
         
         submit_btn = ctk.CTkButton(
             overlay,
@@ -349,49 +345,41 @@ class AddHabitFrame(ctk.CTkFrame):
 
     # SAVE HABIT
     def save_habit(self):
-        
+        user_id = 1
         name = self.name_entry.get()
-        # ... get other fields ...
-        # self.db.add_habit(...)
-        # Show messagebox and return to main if successful
-        pass
+        desc = self.description_entry.get()
+        category = self.category_entry.get()
+        frequency = self.dropdown.get()
+        success = self.db.add_habit(
+            user_id=user_id,
+            habit_name=name,
+            description=desc,
+            category=category,
+            frequency=frequency
+        )
+        if success:
+            messagebox.showinfo("Success", "Habit added successfully.")
+            self.show_view_habits_callback()
+        else:
+            messagebox.showerror("Error", "Failed to add habit. Please try again.")
 
 # --- Amend Habit Frame ---
 class AmendHabitFrame(ctk.CTkFrame):
     def __init__(self, master, habit_data, show_view_habits_callback, db):
         super().__init__(master)
         self.db = db
-        self.category_entry = ctk.CTkEntry(self)
+        self.configure(fg_color="#FFFFFF")
         
-        self.habit_id = habit_data[0]  # Adjust index as needed
+        self.habit_id = habit_data[0]
         self.show_view_habits_callback = show_view_habits_callback
         
         # ---- Config and Overlay  ----
-        
-        self.name_entry = ctk.CTkEntry(self)
-        self.name_entry.insert(0, habit_data[1])
-        self.name_entry.pack(pady=5)
-        
-        self.description_entry = ctk.CTkEntry(self)
-        self.description_entry.insert(0, habit_data[2])
-        self.description_entry.pack(pady=5)
-        
-        self.category_entry.insert(0, habit_data[3])
-        self.category_entry.pack(pady=5)
-        self.frequency_dropdown = ctk.CTkOptionMenu(
+        overlay = ctk.CTkFrame(
             self,
-            values=["Daily", "Weekly", "Monthly", "Yearly"],
-            fg_color="#FFFFFF",
-            text_color="#757575",
-            font=("Inter", 20, "italic")
+            fg_color="#87A988",
+            corner_radius=20
         )
-        
-        self.frequency_dropdown.set(habit_data[4])  # Set current frequency
-        self.frequency_dropdown.pack(pady=5)
-        
-        ctk.CTkButton(self, text="Save Changes", command=self.update_habit).pack(pady=10)
-        ctk.CTkButton(self, text="Delete", command=self.delete_habit).pack(pady=10)
-        ctk.CTkButton(self, text="Back", command=show_view_habits_callback).pack(pady=10)
+        overlay.pack(expand=True, fill="both", padx=20, pady=20)
 
     def update_habit(self):
         user_id = 1  # Replace with actual user logic
@@ -428,10 +416,9 @@ class AmendHabitFrame(ctk.CTkFrame):
                 
 #--- Main Application Entry Point ---
 if __name__ == "__main__":
-    connection_string = "YOUR_CONNECTION_STRING_HERE"
+    load_dotenv()
+    connection_string = os.getenv("DB_CONNECTION_STRING")
+    if not connection_string:
+        raise ValueError("DB_CONNECTION_STRING environment variable is not set.")
     app = App(connection_string)
-    app.mainloop()
-
-if __name__ == "__main__":
-    app = App()
     app.mainloop()
