@@ -212,12 +212,16 @@ class ViewHabitsFrame(ctk.CTkFrame):
 
     # DOUBLE CLICK TO AMEND HABIT
     def on_double_click(self, event):
-        selected = self.tree.selection()
-        if selected:
-            habit_id = selected[0]
-            values = self.tree.item(habit_id, "values")
-            habit_data = (habit_id,) + values # type: ignore
-            self.show_amend_callback(habit_data)
+    selected = self.tree.selection()8
+    print(f"[DEBUG] Selected items: {selected}")  # Print what is selected
+    if selected:
+        habit_id = selected[0]
+        print(f"[DEBUG] Selected habit_id: {habit_id}")  # Print the habit_id
+        values = self.tree.item(habit_id, "values")
+        print(f"[DEBUG] Treeview values for selected habit: {values}")  # Print the values tuple
+        habit_data = (habit_id,) + values  # type: ignore
+        print(f"[DEBUG] habit_data passed to show_amend_callback: {habit_data}")  # Print the final tuple
+        self.show_amend_callback(habit_data)
 
 # --- Add Habit Frame ---
 class AddHabitFrame(ctk.CTkFrame):
@@ -338,6 +342,7 @@ class AddHabitFrame(ctk.CTkFrame):
     # ---- CRUD Operations ----
 
     # SAVE HABIT
+    ## failsafe checks for empty fields
     def save_habit(self):
         user_id = self.user_id
         name = self.name_entry.get().strip()
